@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>引用文獻整理系統</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=Crimson+Pro:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --earth-cream: #FAF8F3;
+            --earth-sand: #EDE8DC;
+            --earth-clay: #D4C5B0;
+            --earth-terracotta: #B89778;
+            --earth-bark: #8B7355;
+            --earth-soil: #6B5D4F;
+            --earth-moss: #7A9B8E;
+            --earth-sage: #9DB4A8;
+            --accent-copper: #C4916A;
+            --accent-amber: #DDB892;
+            --accent-rust: #A67153;
+            --shadow: rgba(107, 93, 79, 0.12);
+            --shadow-md: rgba(107, 93, 79, 0.18);
+            --glow: rgba(196, 145, 106, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif TC', serif;
+            background: linear-gradient(165deg, var(--earth-cream) 0%, var(--earth-sand) 50%, #F5F1E8 100%);
+            color: var(--earth-soil);
+            min-height: 100vh;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 15% 25%, var(--glow) 0%, transparent 45%),
+                radial-gradient(circle at 85% 75%, rgba(157, 180, 168, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(212, 197, 176, 0.05) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(107, 93, 79, 0.015) 2px, rgba(107, 93, 79, 0.015) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 3.2rem;
+            font-weight: 500;
+            color: var(--earth-bark);
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.05em;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .subtitle {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.9rem;
+            color: var(--earth-terracotta);
+            font-weight: 300;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            animation: fadeIn 1.2s ease-out 0.3s both;
+        }
+
+        .tab-btn {
+            padding: 0.85rem 2.2rem;
+            border: 1.5px solid var(--earth-clay);
+            background: rgba(255, 255, 255, 0.75);
+            color: var(--earth-bark);
+            font-family: 'Noto Serif TC', serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.03em;
+            backdrop-filter: blur(8px);
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-copper), var(--accent-amber));
+            transition: width 0.5s, height 0.5s, top 0.5s, left 0.5s;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+
+        .tab-btn:hover::before {
+            width: 280px;
+            height: 280px;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            border-color: var(--accent-copper);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-copper), var(--accent-amber));
+            color: white;
+            border-color: var(--accent-copper);
+            box-shadow: 0 4px 16px var(--glow);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.7s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 2.5rem 3rem;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(212, 197, 176, 0.3);
+            backdrop-filter: blur(12px);
+        }
+
+        .form-section h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.9rem;
+            font-weight: 500;
+            color: var(--earth-bark);
+            margin-bottom: 1.8rem;
+            border-bottom: 2px solid var(--accent-amber);
+            padding-bottom: 0.8rem;
+            letter-spacing: 0.02em;
+        }
+
+        .search-bar {
+            margin-bottom: 2rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 1rem 1.8rem;
+            border: 1.5px solid var(--earth-clay);
+            border-radius: 50px;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--earth-soil);
+            transition: all 0.3s ease;
+            letter-spacing: 0.01em;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--earth-terracotta);
+            opacity: 0.6;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent-copper);
+            box-shadow: 0 0 0 3px var(--glow);
+            background: white;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--earth-bark);
+            margin-bottom: 0.6rem;
+            font-size: 0.92rem;
+            letter-spacing: 0.02em;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            padding: 0.95rem 1.3rem;
+            border: 1.5px solid var(--earth-clay);
+            border-radius: 14px;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 0.93rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--earth-soil);
+            transition: all 0.3s ease;
+            letter-spacing: 0.01em;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-copper);
+            box-shadow: 0 0 0 3px var(--glow);
+            transform: translateY(-1px);
+            background: white;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.7;
+        }
+
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--accent-copper);
+        }
+
+        .btn {
+            padding: 1rem 2.8rem;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Noto Serif TC', serif;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.35s ease;
+            box-shadow: 0 4px 16px var(--shadow);
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-copper), var(--accent-amber));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px var(--glow);
+        }
+
+        .btn-secondary {
+            background: var(--earth-moss);
+            color: white;
+            margin-left: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--earth-sage);
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: var(--accent-rust);
+            color: white;
+            padding: 0.65rem 1.3rem;
+            font-size: 0.88rem;
+        }
+
+        .btn-danger:hover {
+            background: #8B5E42;
+        }
+
+        .btn-edit {
+            background: var(--accent-amber);
+            color: white;
+            padding: 0.65rem 1.3rem;
+            font-size: 0.88rem;
+            margin-right: 0.6rem;
+        }
+
+        .btn-edit:hover {
+            background: var(--accent-copper);
+        }
+
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            padding: 1.6rem 2rem;
+            box-shadow: 0 4px 20px var(--shadow);
+            border: 1px solid rgba(212, 197, 176, 0.25);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: cardSlideIn 0.5s ease-out backwards;
+            cursor: pointer;
+            width: 100%;
+            max-width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-copper), var(--accent-amber));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateX(6px);
+            box-shadow: 0 6px 28px var(--shadow-md);
+            border-color: var(--accent-amber);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card.cited {
+            background: linear-gradient(135deg, rgba(157, 180, 168, 0.12), rgba(122, 155, 142, 0.08));
+            border-color: rgba(122, 155, 142, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+            gap: 1.5rem;
+        }
+
+        .card-main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-meta-line {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .card-meta {
+            font-size: 0.88rem;
+            color: var(--earth-terracotta);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .card-meta strong {
+            font-weight: 500;
+            color: var(--earth-bark);
+        }
+
+        .card-content-preview {
+            font-size: 0.92rem;
+            line-height: 1.75;
+            color: var(--earth-soil);
+            margin-bottom: 1rem;
+            max-height: 3.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            padding: 0.4rem 1.1rem;
+            background: var(--earth-sand);
+            border-radius: 20px;
+            font-size: 0.82rem;
+            color: var(--earth-bark);
+            border: 1px solid var(--earth-clay);
+            font-family: 'Noto Sans TC', sans-serif;
+            letter-spacing: 0.02em;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(212, 197, 176, 0.3);
+        }
+
+        .cited-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 1.1rem;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .cited-checkbox:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: var(--accent-copper);
+        }
+
+        .cited-checkbox input {
+            width: 19px;
+            height: 19px;
+        }
+
+        .cited-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .backup-section {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .webhook-section {
+            margin-top: 2.5rem;
+            padding: 2rem;
+            background: rgba(250, 248, 243, 0.6);
+            border-radius: 16px;
+            border: 1.5px dashed var(--earth-clay);
+        }
+
+        .webhook-section h3 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.4rem;
+            color: var(--earth-bark);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .webhook-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            border: 1px solid var(--earth-sand);
+        }
+
+        .webhook-info h4 {
+            font-size: 1rem;
+            color: var(--earth-bark);
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .webhook-info pre {
+            background: #2D2D2D;
+            color: #F8F8F2;
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            font-family: 'Courier New', monospace;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4.5rem 2rem;
+            color: var(--earth-terracotta);
+            font-size: 1.05rem;
+            opacity: 0.8;
+        }
+
+        .empty-state::before {
+            content: '📚';
+            display: block;
+            font-size: 3.5rem;
+            margin-bottom: 1.2rem;
+            opacity: 0.4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 2.8rem;
+            max-width: 850px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--accent-amber);
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            color: var(--earth-bark);
+            font-weight: 500;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--earth-terracotta);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            color: var(--earth-bark);
+            background: var(--earth-sand);
+            transform: rotate(90deg);
+        }
+
+        .project-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.6rem;
+            border: 1.5px solid var(--earth-clay);
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--earth-bark);
+            font-family: 'Noto Serif TC', serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .filter-btn:hover {
+            background: var(--earth-sand);
+            border-color: var(--accent-copper);
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--accent-copper), var(--accent-amber));
+            color: white;
+            border-color: var(--accent-copper);
+            box-shadow: 0 4px 12px var(--glow);
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px var(--shadow-md);
+            border-left: 4px solid var(--accent-copper);
+            z-index: 2000;
+            animation: slideInRight 0.4s ease-out;
+            max-width: 400px;
+        }
+
+        .notification.success {
+            border-left-color: var(--earth-moss);
+        }
+
+        .notification.error {
+            border-left-color: var(--accent-rust);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100px); }
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1.8rem;
+            }
+
+            .card {
+                padding: 1.3rem 1.5rem;
+            }
+
+            .form-section {
+                padding: 2rem 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>引用文獻整理系統</h1>
+            <p class="subtitle">Reference Management</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('references')">所有文獻</button>
+            <button class="tab-btn" onclick="switchTab('add')">新增文獻</button>
+            <button class="tab-btn" onclick="switchTab('projects')">計畫篩選</button>
+            <button class="tab-btn" onclick="switchTab('backup')">資料備份</button>
+        </nav>
+
+        <!-- 所有文獻頁面 -->
+        <div id="references" class="tab-content active">
+            <div class="form-section">
+                <h2>文獻列表</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="🔍 搜尋文獻內容、期刊、主題、APA..." oninput="searchReferences()">
+                </div>
+                <div id="allReferencesContainer" class="cards-container"></div>
+            </div>
+        </div>
+
+        <!-- 新增文獻頁面 -->
+        <div id="add" class="tab-content">
+            <div class="form-section">
+                <h2 id="formTitle">新增文獻資料</h2>
+                <form id="referenceForm">
+                    <input type="hidden" id="editingId">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="refContent">引用文獻內容 *</label>
+                            <textarea id="refContent" required style="min-height: 120px;" placeholder="請輸入文獻的主要內容或摘要..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="journalTitle">期刊標題</label>
+                            <input type="text" id="journalTitle" placeholder="期刊名稱">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="originalJournalTitle">原期刊標題</label>
+                            <input type="text" id="originalJournalTitle" placeholder="原文期刊名稱">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="keywords">引用主題（關鍵字）*</label>
+                            <input type="text" id="keywords" placeholder="例如：自我效能、教師自主" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="journalAPA">期刊 APA 格式</label>
+                            <textarea id="journalAPA" placeholder="完整的 APA 引用格式..."></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="originalAPA">原期刊 APA 格式</label>
+                            <textarea id="originalAPA" placeholder="原文的 APA 引用格式..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="projectSelect">所屬計畫 *</label>
+                            <select id="projectSelect" required>
+                                <option value="">選擇計畫</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">新增文獻</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn" style="display: none;" onclick="cancelEdit()">取消編輯</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 計畫篩選頁面 -->
+        <div id="projects" class="tab-content">
+            <div class="form-section">
+                <h2>新增計畫</h2>
+                <form id="projectForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="projectName">計畫名稱 *</label>
+                            <input type="text" id="projectName" required placeholder="輸入新計畫名稱">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">新增計畫</button>
+                </form>
+            </div>
+
+            <div class="form-section">
+                <h2>計畫篩選</h2>
+                <div class="project-filters" id="projectFilters"></div>
+                <div id="filteredReferencesContainer" class="cards-container"></div>
+            </div>
+        </div>
+
+        <!-- 資料備份頁面 -->
+        <div id="backup" class="tab-content">
+            <div class="form-section">
+                <h2>資料備份與匯出</h2>
+                <p style="text-align: center; margin-bottom: 2rem; color: var(--earth-terracotta); opacity: 0.9;">
+                    定期備份您的文獻資料，確保資料安全無虞
+                </p>
+                <div class="backup-section">
+                    <button class="btn btn-primary" onclick="downloadCSV()">下載 CSV 檔案</button>
+                    <button class="btn btn-secondary" onclick="downloadJSON()">下載 JSON 檔案</button>
+                </div>
+
+                <!-- Webhook 設定區域 -->
+                <div class="webhook-section">
+                    <h3>📡 Webhook 自動推送設定</h3>
+                    <p style="color: var(--earth-terracotta); margin-bottom: 1.5rem; line-height: 1.7;">
+                        設定 Webhook URL 後，每次新增或編輯文獻時，系統會自動將資料推送到您指定的網址。<br>
+                        適用於整合 Zapier、Make、n8n 等自動化工具。
+                    </p>
+                    <div class="form-group">
+                        <label for="webhookURL">Webhook URL</label>
+                        <input type="text" id="webhookURL" placeholder="https://hooks.zapier.com/hooks/catch/..." 
+                               value="" onchange="saveWebhookURL()">
+                        <small style="color: var(--earth-terracotta); margin-top: 0.5rem; display: block;">
+                            儲存後，新增/編輯文獻時將自動發送資料到此網址
+                        </small>
+                    </div>
+
+                    <div class="webhook-info">
+                        <h4>📋 資料格式說明（JSON Schema）</h4>
+                        <p style="color: var(--earth-soil); margin-bottom: 1rem; font-size: 0.9rem;">
+                            系統會以 POST 請求發送以下格式的 JSON 資料：
+                        </p>
+                        <pre>{
+  "reference_content": "引用文獻內容",
+  "journal_title": "期刊標題",
+  "original_journal_title": "原期刊標題",
+  "journal_apa": "期刊 APA 格式",
+  "original_apa": "原期刊 APA 格式",
+  "citation_topic": "引用主題（關鍵字）",
+  "project_affiliation": "所屬計畫名稱",
+  "is_cited": true,
+  "created_at": "2024-01-01T12:00:00.000Z",
+  "updated_at": "2024-01-01T12:00:00.000Z"
+}</pre>
+
+                        <h4 style="margin-top: 1.5rem;">🔧 JavaScript Fetch 範例</h4>
+                        <pre>fetch(webhookURL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    reference_content: "文獻內容",
+    journal_title: "期刊標題",
+    original_journal_title: "原期刊標題",
+    journal_apa: "APA 格式",
+    original_apa: "原文 APA",
+    citation_topic: "自我效能、教師自主",
+    project_affiliation: "計畫名稱",
+    is_cited: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  })
+});</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 詳細檢視模態框 -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>文獻詳細資料</h2>
+                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div id="viewModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 資料儲存
+        let references = JSON.parse(localStorage.getItem('references') || '[]');
+        let projects = JSON.parse(localStorage.getItem('projects') || '[]');
+        let webhookURL = localStorage.getItem('webhookURL') || '';
+        let currentFilter = 'all';
+        let editingRefId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProjectSelect();
+            renderAllReferences();
+            renderProjectFilters();
+            
+            // 載入 Webhook URL
+            if (webhookURL) {
+                document.getElementById('webhookURL').value = webhookURL;
+            }
+        });
+
+        // 儲存 Webhook URL
+        function saveWebhookURL() {
+            webhookURL = document.getElementById('webhookURL').value.trim();
+            localStorage.setItem('webhookURL', webhookURL);
+            showNotification('Webhook URL 已儲存', 'success');
+        }
+
+        // 發送資料到 Webhook
+        async function sendToWebhook(referenceData) {
+            if (!webhookURL) return;
+
+            const project = projects.find(p => p.id === referenceData.projectId);
+            
+            const payload = {
+                reference_content: referenceData.refContent || '',
+                journal_title: referenceData.journalTitle || '',
+                original_journal_title: referenceData.originalJournalTitle || '',
+                journal_apa: referenceData.journalAPA || '',
+                original_apa: referenceData.originalAPA || '',
+                citation_topic: referenceData.keywords || '',
+                project_affiliation: project ? project.name : '',
+                is_cited: referenceData.isCited || false,
+                created_at: referenceData.createdAt,
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(webhookURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showNotification('資料已成功推送到 Webhook', 'success');
+                } else {
+                    showNotification('Webhook 推送失敗: ' + response.statusText, 'error');
+                }
+            } catch (error) {
+                showNotification('Webhook 推送錯誤: ' + error.message, 'error');
+            }
+        }
+
+        // 顯示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // 切換分頁
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'references') {
+                renderAllReferences();
+                document.getElementById('searchInput').value = '';
+            }
+            if (tabName === 'projects') {
+                renderProjectFilters();
+            }
+        }
+
+        // 新增計畫
+        document.getElementById('projectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const projectName = document.getElementById('projectName').value.trim();
+            
+            if (projectName) {
+                projects.push({
+                    id: Date.now(),
+                    name: projectName,
+                    createdAt: new Date().toISOString()
+                });
+                
+                localStorage.setItem('projects', JSON.stringify(projects));
+                updateProjectSelect();
+                renderProjectFilters();
+                document.getElementById('projectForm').reset();
+                showNotification('計畫已新增', 'success');
+            }
+        });
+
+        // 新增/編輯文獻（已移除 isCited 欄位，預設為 false）
+        document.getElementById('referenceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const refData = {
+                refContent: document.getElementById('refContent').value,
+                journalTitle: document.getElementById('journalTitle').value,
+                originalJournalTitle: document.getElementById('originalJournalTitle').value,
+                keywords: document.getElementById('keywords').value,
+                journalAPA: document.getElementById('journalAPA').value,
+                originalAPA: document.getElementById('originalAPA').value,
+                projectId: parseInt(document.getElementById('projectSelect').value)
+            };
+
+            if (editingRefId) {
+                // 編輯模式 - 保留原有的 isCited 狀態
+                const index = references.findIndex(r => r.id === editingRefId);
+                references[index] = { 
+                    ...references[index], 
+                    ...refData,
+                    updatedAt: new Date().toISOString()
+                };
+                showNotification('文獻已更新', 'success');
+                
+                // 發送到 Webhook
+                await sendToWebhook(references[index]);
+                
+                cancelEdit();
+            } else {
+                // 新增模式 - 預設 isCited 為 false
+                const newRef = {
+                    id: Date.now(),
+                    ...refData,
+                    isCited: false,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                references.push(newRef);
+                showNotification('文獻已新增', 'success');
+                
+                // 發送到 Webhook
+                await sendToWebhook(newRef);
+            }
+            
+            localStorage.setItem('references', JSON.stringify(references));
+            document.getElementById('referenceForm').reset();
+            renderAllReferences();
+            renderProjectFilters();
+        });
+
+        // 編輯文獻
+        function editReference(id) {
+            const ref = references.find(r => r.id === id);
+            if (!ref) return;
+
+            editingRefId = id;
+            document.getElementById('editingId').value = id;
+            document.getElementById('refContent').value = ref.refContent || '';
+            document.getElementById('journalTitle').value = ref.journalTitle || '';
+            document.getElementById('originalJournalTitle').value = ref.originalJournalTitle || '';
+            document.getElementById('keywords').value = ref.keywords;
+            document.getElementById('journalAPA').value = ref.journalAPA || '';
+            document.getElementById('originalAPA').value = ref.originalAPA || '';
+            document.getElementById('projectSelect').value = ref.projectId;
+
+            document.getElementById('formTitle').textContent = '編輯文獻資料';
+            document.getElementById('submitBtn').textContent = '更新文獻';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+
+            switchTab('add');
+            document.querySelector('.tab-btn[onclick*="add"]').classList.add('active');
+            
+            // 滾動到頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 取消編輯
+        function cancelEdit() {
+            editingRefId = null;
+            document.getElementById('referenceForm').reset();
+            document.getElementById('formTitle').textContent = '新增文獻資料';
+            document.getElementById('submitBtn').textContent = '新增文獻';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
+
+        // 更新計畫選單
+        function updateProjectSelect() {
+            const select = document.getElementById('projectSelect');
+            select.innerHTML = '<option value="">選擇計畫</option>';
+            
+            projects.forEach(project => {
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                select.appendChild(option);
+            });
+        }
+
+        // 搜尋文獻
+        function searchReferences() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                renderAllReferences();
+                return;
+            }
+
+            const filtered = references.filter(ref => {
+                return (
+                    (ref.refContent || '').toLowerCase().includes(searchTerm) ||
+                    (ref.journalTitle || '').toLowerCase().includes(searchTerm) ||
+                    (ref.originalJournalTitle || '').toLowerCase().includes(searchTerm) ||
+                    ref.keywords.toLowerCase().includes(searchTerm) ||
+                    (ref.journalAPA || '').toLowerCase().includes(searchTerm) ||
+                    (ref.originalAPA || '').toLowerCase().includes(searchTerm)
+                );
+            });
+
+            renderReferences(filtered, 'allReferencesContainer');
+        }
+
+        // 渲染所有文獻
+        function renderAllReferences() {
+            renderReferences(references, 'allReferencesContainer');
+        }
+
+        // 渲染文獻列表
+        function renderReferences(refList, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (refList.length === 0) {
+                container.innerHTML = '<div class="empty-state">沒有符合的文獻資料</div>';
+                return;
+            }
+            
+            container.innerHTML = refList.map((ref, index) => {
+                const project = projects.find(p => p.id === ref.projectId);
+                return createReferenceCard(ref, project, index);
+            }).join('');
+        }
+
+        // 建立文獻卡片
+        function createReferenceCard(ref, project, index) {
+            return `
+                <div class="card ${ref.isCited ? 'cited' : ''}" style="animation-delay: ${index * 0.02}s" onclick="viewReference(${ref.id})">
+                    <div class="card-header">
+                        <div class="card-main-content">
+                            ${ref.refContent ? `
+                                <p class="card-content-preview">${ref.refContent}</p>
+                            ` : ''}
+                            
+                            <div class="card-meta-line">
+                                ${ref.journalTitle ? `
+                                    <span class="card-meta">
+                                        <strong>期刊</strong> ${ref.journalTitle}
+                                    </span>
+                                ` : ''}
+                                ${project ? `
+                                    <span class="card-meta">
+                                        <strong>計畫</strong> ${project.name}
+                                    </span>
+                                ` : ''}
+                            </div>
+
+                            <div class="card-tags">
+                                ${ref.keywords.split(/[,，、]/).map(kw => 
+                                    `<span class="tag">${kw.trim()}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <div class="cited-checkbox" onclick="event.stopPropagation(); toggleCited(${ref.id})">
+                            <input type="checkbox" ${ref.isCited ? 'checked' : ''} onchange="event.stopPropagation(); toggleCited(${ref.id})">
+                            <label>${ref.isCited ? '✓ 已引用' : '○ 未引用'}</label>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-edit" onclick="event.stopPropagation(); editReference(${ref.id})">編輯</button>
+                            <button class="btn btn-danger" onclick="event.stopPropagation(); deleteReference(${ref.id})">刪除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 切換引用狀態 - 即時更新，無需儲存
+        async function toggleCited(id) {
+            const ref = references.find(r => r.id === id);
+            if (ref) {
+                ref.isCited = !ref.isCited;
+                ref.updatedAt = new Date().toISOString();
+                localStorage.setItem('references', JSON.stringify(references));
+                
+                // 發送到 Webhook
+                await sendToWebhook(ref);
+                
+                // 即時更新所有顯示
+                renderAllReferences();
+                if (currentFilter !== 'all') {
+                    filterByProject(currentFilter);
+                }
+                
+                showNotification('引用狀態已更新', 'success');
+            }
+        }
+
+        // 檢視文獻詳細
+        function viewReference(id) {
+            const ref = references.find(r => r.id === id);
+            if (!ref) return;
+
+            const project = projects.find(p => p.id === ref.projectId);
+            const content = `
+                <div style="line-height: 1.8;">
+                    ${ref.refContent ? `
+                        <div style="margin-bottom: 1.8rem; padding: 1.8rem; background: var(--earth-sand); border-radius: 14px;">
+                            <strong style="display: block; margin-bottom: 1rem; color: var(--earth-bark); font-size: 1.05rem;">引用文獻內容</strong>
+                            <p style="white-space: pre-wrap; color: var(--earth-soil); line-height: 1.8;">${ref.refContent}</p>
+                        </div>
+                    ` : ''}
+                    ${ref.journalTitle ? `
+                        <div style="margin-bottom: 1.2rem;">
+                            <strong style="color: var(--earth-bark);">期刊標題</strong>
+                            <p style="margin-top: 0.4rem;">${ref.journalTitle}</p>
+                        </div>
+                    ` : ''}
+                    ${ref.originalJournalTitle ? `
+                        <div style="margin-bottom: 1.2rem;">
+                            <strong style="color: var(--earth-bark);">原期刊標題</strong>
+                            <p style="margin-top: 0.4rem;">${ref.originalJournalTitle}</p>
+                        </div>
+                    ` : ''}
+                    <div style="margin-bottom: 1.2rem;">
+                        <strong style="color: var(--earth-bark);">引用主題</strong>
+                        <div class="card-tags" style="margin-top: 0.6rem;">
+                            ${ref.keywords.split(/[,，、]/).map(kw => 
+                                `<span class="tag">${kw.trim()}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    ${ref.journalAPA ? `
+                        <div style="margin-bottom: 1.2rem; padding: 1.2rem; background: var(--earth-cream); border-radius: 10px;">
+                            <strong style="color: var(--earth-bark);">期刊 APA</strong>
+                            <p style="margin-top: 0.4rem; font-style: italic; line-height: 1.7;">${ref.journalAPA}</p>
+                        </div>
+                    ` : ''}
+                    ${ref.originalAPA ? `
+                        <div style="margin-bottom: 1.2rem; padding: 1.2rem; background: var(--earth-cream); border-radius: 10px;">
+                            <strong style="color: var(--earth-bark);">原期刊 APA</strong>
+                            <p style="margin-top: 0.4rem; font-style: italic; line-height: 1.7;">${ref.originalAPA}</p>
+                        </div>
+                    ` : ''}
+                    <div style="margin-bottom: 1.2rem;">
+                        <strong style="color: var(--earth-bark);">所屬計畫</strong>
+                        <p style="margin-top: 0.4rem;">${project ? project.name : '未分類'}</p>
+                    </div>
+                    <div style="margin-bottom: 1.2rem;">
+                        <strong style="color: var(--earth-bark);">引用狀態</strong>
+                        <span class="tag" style="margin-top: 0.4rem; display: inline-block; background: ${ref.isCited ? 'var(--earth-moss)' : 'var(--earth-clay)'}; color: white;">
+                            ${ref.isCited ? '✓ 已引用' : '○ 未引用'}
+                        </span>
+                    </div>
+                    <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid var(--earth-sand);">
+                        <button class="btn btn-primary" onclick="closeViewModal(); editReference(${ref.id})">編輯此文獻</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('viewModalContent').innerHTML = content;
+            document.getElementById('viewModal').classList.add('active');
+        }
+
+        // 關閉詳細檢視
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('active');
+        }
+
+        // 渲染計畫篩選器
+        function renderProjectFilters() {
+            const container = document.getElementById('projectFilters');
+            
+            const buttons = `
+                <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="filterByProject('all')">
+                    全部文獻 (${references.length})
+                </button>
+                ${projects.map(project => {
+                    const count = references.filter(r => r.projectId === project.id).length;
+                    return `
+                        <button class="filter-btn ${currentFilter === project.id ? 'active' : ''}" onclick="filterByProject(${project.id})">
+                            ${project.name} (${count})
+                        </button>
+                    `;
+                }).join('')}
+            `;
+
+            container.innerHTML = buttons;
+            filterByProject(currentFilter);
+        }
+
+        // 依計畫篩選
+        function filterByProject(projectId) {
+            currentFilter = projectId;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 篩選文獻
+            const filtered = projectId === 'all' 
+                ? references 
+                : references.filter(ref => ref.projectId === projectId);
+
+            renderReferences(filtered, 'filteredReferencesContainer');
+        }
+
+        // 刪除文獻
+        function deleteReference(id) {
+            if (confirm('確定要刪除此文獻嗎？')) {
+                references = references.filter(ref => ref.id !== id);
+                localStorage.setItem('references', JSON.stringify(references));
+                renderAllReferences();
+                renderProjectFilters();
+                showNotification('文獻已刪除', 'success');
+            }
+        }
+
+        // 下載 CSV
+        function downloadCSV() {
+            if (references.length === 0) {
+                showNotification('沒有資料可以匯出', 'error');
+                return;
+            }
+
+            const headers = ['引用文獻內容', '期刊標題', '原期刊標題', '引用主題', '期刊APA', '原期刊APA', '所屬計畫', '是否已引用', '建立時間'];
+            const rows = references.map(ref => {
+                const project = projects.find(p => p.id === ref.projectId);
+                return [
+                    ref.refContent || '',
+                    ref.journalTitle || '',
+                    ref.originalJournalTitle || '',
+                    ref.keywords,
+                    ref.journalAPA || '',
+                    ref.originalAPA || '',
+                    project ? project.name : '',
+                    ref.isCited ? '是' : '否',
+                    new Date(ref.createdAt).toLocaleString('zh-TW')
+                ].map(field => `"${String(field).replace(/"/g, '""')}"`);
+            });
+
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `文獻資料_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showNotification('CSV 檔案已下載', 'success');
+        }
+
+        // 下載 JSON
+        function downloadJSON() {
+            if (references.length === 0 && projects.length === 0) {
+                showNotification('沒有資料可以匯出', 'error');
+                return;
+            }
+
+            const data = {
+                references,
+                projects,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `文獻資料_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showNotification('JSON 檔案已下載', 'success');
+        }
+
+        // 點擊模態框外部關閉
+        document.getElementById('viewModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeViewModal();
+            }
+        });
+    </script>
+</body>
+</html>
